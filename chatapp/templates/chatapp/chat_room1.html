@@ -1,0 +1,336 @@
+{% extends 'chatapp/base1.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: #e8f0fe;
+        margin: 0;
+        padding: 0;
+    }
+
+    .chat-container {
+        max-width: 700px;
+        margin: 2rem auto;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    h2 {
+        margin: 0;
+        padding: 1rem;
+        background: #4481eb;
+        color: white;
+        text-align: center;
+        position: relative;
+    }
+
+    .menu-button {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: white;
+        cursor: pointer;
+    }
+
+    .dropdown {
+        position: absolute;
+        top: 3.2rem;
+        right: 1rem;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        display: none;
+        flex-direction: column;
+        z-index: 10;
+    }
+
+    .dropdown button {
+        padding: 0.6rem 1rem;
+        border: none;
+        background: none;
+        text-align: left;
+        cursor: pointer;
+        font-size: 0.95rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .dropdown button:last-child {
+        border-bottom: none;
+    }
+
+    .dropdown button:hover {
+        background: #f0f0f0;
+    }
+
+    .chat-log {
+        padding: 1rem;
+        height: 400px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+        background: #f5f7fa;
+    }
+
+    .chat-message {
+        max-width: 70%;
+        padding: 0.8rem 1rem;
+        border-radius: 15px;
+        position: relative;
+        font-size: 0.95rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        word-wrap: break-word;
+    }
+
+    .chat-message.left {
+        background: #f1f0f0;
+        align-self: flex-start;
+        border-bottom-left-radius: 0;
+    }
+
+    .chat-message.right {
+        background: #d4edda;
+        align-self: flex-end;
+        border-bottom-right-radius: 0;
+    }
+
+    .chat-message strong {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        color: #333;
+    }
+
+    .chat-message small {
+        font-size: 0.7rem;
+        color: #777;
+    }
+
+    .chat-input-container {
+        display: flex;
+        border-top: 1px solid #ddd;
+        padding: 0.8rem;
+        gap: 0.5rem;
+    }
+
+    #chat-message-input {
+        flex: 1;
+        padding: 0.6rem;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        outline: none;
+    }
+
+    #chat-message-submit {
+        background: #3f51b5;
+        color: white;
+        padding: 0.6rem 1rem;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    #chat-message-submit:hover {
+        background: #303f9f;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        max-width: 300px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .modal p {
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: space-around;
+        gap: 1rem;
+    }
+
+    .btn-yes {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+
+    .btn-cancel {
+        background: #f44336;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+</style>
+
+<div class="chat-container">
+    <h2>
+        Chat Room: {{ room_name }}
+        <button class="menu-button" onclick="toggleDropdown()">⋮</button>
+        <div id="dropdown" class="dropdown">
+            <button onclick="clearChat()">Clear Chat</button>
+        </div>
+    </h2>
+
+    <div id="chat-log" class="chat-log">
+        {% for chat in chats %}
+        <div class="chat-message {% if chat.sender == username %}right{% else %}left{% endif %}">
+            <strong>{{ chat.sender }}</strong>: {{ chat.message }}<br>
+            <small>Hash: {{ chat.message_hash }}</small>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="chat-input-container">
+        <input id="chat-message-input" type="text" placeholder="Type your message...">
+        <button id="chat-message-submit">Send</button>
+    </div>
+</div>
+
+<!-- Modal Popup -->
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal">
+        <p>Are you sure you want to clear the chat?</p>
+        <div class="modal-actions">
+            <button onclick="confirmClearChat()" class="btn-yes">Yes</button>
+            <button onclick="closeModal()" class="btn-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const roomName = "{{ room_name }}";
+    const username = "{{ username|escapejs }}";
+
+    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatLog = document.getElementById('chat-log');
+        const align = data.username === username ? 'right' : 'left';
+
+        let tempDiv = document.querySelector(`[data-temp="true"][data-msg="${data.message}"]`);
+        if (tempDiv) {
+            tempDiv.querySelector("small").innerText = `Hash: ${data.message_hash}`;
+            tempDiv.dataset.temp = "false";
+        } else {
+            const div = document.createElement("div");
+            div.className = "chat-message " + align;
+            div.innerHTML = `<strong>${data.username}</strong> ${data.message}<br><small>Hash: ${data.message_hash}</small>`;
+            chatLog.appendChild(div);
+        }
+
+        chatLog.scrollTop = chatLog.scrollHeight;
+    };
+
+    document.getElementById("chat-message-submit").onclick = function() {
+        const input = document.getElementById("chat-message-input");
+        const message = input.value.trim();
+        if (message === "") return;
+
+        const div = document.createElement("div");
+        div.className = "chat-message right";
+        div.dataset.temp = "true";
+        div.dataset.msg = message;
+        div.innerHTML = `<strong>${username}</strong> ${message}<br><small>Hash: sent...</small>`;
+        document.getElementById("chat-log").appendChild(div);
+
+        chatSocket.send(JSON.stringify({ message }));
+        input.value = "";
+    };
+
+    document.getElementById("chat-message-input").addEventListener("keyup", function(e) {
+        if (e.keyCode === 13) {
+            document.getElementById("chat-message-submit").click();
+        }
+    });
+
+    function toggleDropdown() {
+        const dropdown = document.getElementById("dropdown");
+        dropdown.style.display = dropdown.style.display === "flex" ? "none" : "flex";
+        dropdown.style.flexDirection = "column";
+    }
+
+    function clearChat() {
+        document.getElementById("modal-overlay").style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById("modal-overlay").style.display = "none";
+    }
+
+    function confirmClearChat() {
+        fetch(`/chat/clear/${roomName}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        }).then(response => response.json())
+          .then(data => {
+              if (data.status === "success") {
+                  document.getElementById("chat-log").innerHTML = "";
+              }
+              closeModal();
+          });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

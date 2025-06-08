@@ -1,0 +1,47 @@
+{% extends 'chatapp/base1.html' %}
+{% load static %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<head><link rel="styleshe    et" type="text/css" href="{% static 'css/styles.css' %}"></head>
+<body>
+  <div class="container" id="container">
+    <div class="forms-container">
+      <div class="signin-signup">
+        <form method="POST" action="{% url 'login' %}" class="sign-in-form">
+          {% csrf_token %}
+          <h2 class="title">Sign in</h2>
+          <div class="input-field">
+            <i class="fas fa-user"></i>
+            <input type="text" name="username" placeholder="Username" required />
+          </div>
+          <div class="input-field">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" placeholder="Password" required />
+          </div>
+          <input type="submit" value="Login" class="btn solid" />
+        </form>
+      </div>
+    </div>
+
+    <div class="panels-container">
+      <div class="panel left-panel">
+        <div class="content">
+          <h3>New here?</h3>
+          <p>Sign up and start managing your tasks!</p>
+          <a href="{% url 'register' %}" class="btn transparent">Sign up</a>
+        </div>
+        {% comment %} <img src="{% static 'img/register.svg' %}" class="image" alt="register" /> {% endcomment %}
+      </div>
+
+      <div class="panel right-panel">
+        <div class="content">
+          <h3>One of us?</h3>
+          <p>Login and continue where you left off.</p>
+        </div>
+        <img src="{% static 'img/log.svg' %}" class="image" alt="login" />
+      </div>
+    </div>
+  </div>
+</body>
+{% endblock %}

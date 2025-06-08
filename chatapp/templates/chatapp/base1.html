@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}ChatApp{% endblock %}</title>
+  <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+  <style>
+    nav.navbar {
+      background-color: #4481eb;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .logout-btn {
+      background: none;
+      border: 2px solid white;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: white;
+      color: #4481eb;
+    }
+
+    .main-container {
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <span class="navbar-brand">Blockchain ChatApp</span>
+    {% if user.is_authenticated %}
+      <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+    {% endif %}
+  </nav>
+
+  <div class="main-container">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

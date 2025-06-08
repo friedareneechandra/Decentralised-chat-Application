@@ -1,0 +1,233 @@
+{% extends 'chatapp/base1.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  .dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f4f7fa;
+  }
+
+  .sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    border-right: 1px solid #ddd;
+    padding: 20px;
+    display: none;
+    flex-shrink: 0;
+  }
+
+  .dropdown-section {
+    margin-bottom: 20px;
+  }
+
+  .dropdown-header {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+
+  .dropdown-icon {
+    transition: transform 0.3s ease;
+  }
+
+  .dropdown-icon.rotate {
+    transform: rotate(90deg);
+  }
+
+  .dropdown-content {
+    list-style: none;
+    padding-left: 10px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .dropdown-content li {
+    padding: 5px 0;
+  }
+
+  .dropdown-content li a {
+    text-decoration: none;
+    color: #007bff;
+  }
+
+  .online {
+    color: green;
+    font-weight: bold;
+  }
+
+  .current-user {
+    color: blue;
+    font-weight: bold;
+    background-color: #e8f0ff;
+    padding: 3px 8px;
+    border-radius: 5px;
+  }
+
+  .main-content {
+    flex-grow: 1;
+    padding: 30px;
+  }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .hamburger {
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+
+  .welcome-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-container {
+      flex-direction: column;
+    }
+
+    .sidebar {
+      display: block;
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid #ddd;
+    }
+  }
+
+  .messages {
+    margin-top: 20px;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  .messages li {
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    background: #fff;
+    border-left: 4px solid #007bff;
+  }
+
+  .input-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .form-control {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    flex: 1;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+  }
+</style>
+
+<div class="top-bar">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <div class="welcome-text">Welcome, {{ user.username }}</div>
+</div>
+
+<div class="dashboard-container">
+  <div class="sidebar" id="sidebar">
+    <div class="dropdown-section">
+      <div class="dropdown-header" onclick="toggleDropdown('usersList', this)">
+        Users
+        <span class="dropdown-icon">▶</span>
+      </div>
+      <ul class="dropdown-content" id="usersList">
+        {% for user in users %}
+          <li class="{% if user.username == request_user.username %}current-user{% elif user.username in online_usernames %}online{% endif %}">
+            {{ user.username }}
+          </li>
+        {% empty %}
+          <li>No users found</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="dropdown-section">
+      <div class="dropdown-header" onclick="toggleDropdown('roomsList', this)">
+        Rooms
+        <span class="dropdown-icon">▶</span>
+      </div>
+      <ul class="dropdown-content" id="roomsList">
+        {% for room in rooms %}
+          <li><a href="{% url 'chat_room' room_name=room.room_name %}">{{ room.room_name }}</a></li>
+        {% empty %}
+          <li>No rooms available</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <form id="roomForm" onsubmit="goToRoom(event)">
+      <div class="input-group">
+        <input type="text" id="roomInput" name="room_name" class="form-control" placeholder="Enter Room Name" required>
+        <input type="password" id="pinInput" name="pin" class="form-control" placeholder="Enter Room PIN" required>
+        <button type="submit" class="btn">Join Chat</button>
+      </div>
+    </form>
+
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function toggleDropdown(id, header) {
+    const content = document.getElementById(id);
+    const icon = header.querySelector('.dropdown-icon');
+    const isOpen = content.style.display === 'block';
+    content.style.display = isOpen ? 'none' : 'block';
+    icon.classList.toggle('rotate', !isOpen);
+  }
+
+  function goToRoom(event) {
+    event.preventDefault();
+    const roomName = document.getElementById("roomInput").value.trim();
+    const pin = document.getElementById("pinInput").value.trim();
+    if (roomName && pin) {
+      const form = document.getElementById("roomForm");
+      form.method = "POST";
+      form.action = "/chat/join/";
+      form.submit();
+    }
+  }
+</script>
+{% endblock %}
