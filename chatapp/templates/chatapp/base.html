@@ -44,24 +44,6 @@
   </style>
 </head>
 <body>
-  <!-- Toggle Button -->
-<button class="hamburger" onclick="toggleSidebar()">☰</button>
-
-<div class="dashboard-container">
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <h4>User</h4>
-        <p>{{ user.username }}</p>
-
-        <h4>Rooms</h4>
-        <ul>
-            <li><a href="{% url 'chat_room' room_name='general' %}">#general</a></li>
-            <li><a href="{% url 'chat_room' room_name='crypto' %}">#crypto</a></li>
-            <li><a href="{% url 'chat_room' room_name='design' %}">#design</a></li>
-            <li><a href="{% url 'chat_room' room_name='random' %}">#random</a></li>
-        </ul>
-    </div>
-    
   <nav class="navbar">
     <span class="navbar-brand">Blockchain ChatApp</span>
     {% if user.is_authenticated %}
