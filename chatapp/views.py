@@ -93,7 +93,7 @@ def login_view(request):
             return redirect('dashboard')
         else:
             messages.error(request, "Invalid username or password.")
-    return render(request, 'chatapp/login1.html')
+    return render(request, 'chatapp/login.html')
 
 
 def logout_view(request):
