@@ -3,51 +3,45 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="forms-container">
-    <div class="signin-signup">
-      <form method="post" action="{% url 'login' %}" class="sign-in-form">
-        {% csrf_token %}
-        <h2 class="title">Login to Messaging App</h2>
+<head><link rel="styleshe    et" type="text/css" href="{% static 'css/styles.css' %}"></head>
+<body>
+  <div class="container" id="container">
+    <div class="forms-container">
+      <div class="signin-signup">
+        <form method="POST" action="{% url 'login' %}" class="sign-in-form">
+          {% csrf_token %}
+          <h2 class="title">Sign in</h2>
+          <div class="input-field">
+            <i class="fas fa-user"></i>
+            <input type="text" name="username" placeholder="Username" required />
+          </div>
+          <div class="input-field">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" placeholder="Password" required />
+          </div>
+          <input type="submit" value="Login" class="btn solid" />
+        </form>
+      </div>
+    </div>
 
-        <div class="input-field">
-          <i class="fas fa-envelope"></i>
-          <input type="email" name="username" placeholder="Email" required />
+    <div class="panels-container">
+      <div class="panel left-panel">
+        <div class="content">
+          <h3>New here?</h3>
+          <p>Sign up and start managing your tasks!</p>
+          <a href="{% url 'register' %}" class="btn transparent">Sign up</a>
         </div>
+        {% comment %} <img src="{% static 'img/register.svg' %}" class="image" alt="register" /> {% endcomment %}
+      </div>
 
-        <div class="input-field">
-          <i class="fas fa-lock"></i>
-          <input type="password" name="password" placeholder="Password" required />
+      <div class="panel right-panel">
+        <div class="content">
+          <h3>One of us?</h3>
+          <p>Login and continue where you left off.</p>
         </div>
-
-        <div style="align-self: flex-start; margin: 10px 0; font-size: 14px; color: #555;">
-          <input type="checkbox" name="remember_me" id="remember_me" />
-          <label for="remember_me">Remember Me</label>
-        </div>
-
-        <button type="submit" class="btn">Sign In</button>
-        <a href="{% url 'register' %}" class="btn transparent">Register</a>
-      </form>
+        <img src="{% static 'img/log.svg' %}" class="image" alt="login" />
+      </div>
     </div>
   </div>
-
-  <div class="panels-container">
-    <div class="panel left-panel">
-      <div class="content">
-        <h3>New here?</h3>
-        <p>Register to start messaging instantly!</p>
-        <a href="{% url 'register' %}" class="btn transparent">Register</a>
-      </div>
-      <img src="{% static 'chatapp/chat-icon.png' %}" class="image" alt="Chat Icon" />
-    </div>
-
-    <div class="panel right-panel">
-      <div class="content">
-        <h3>One of us?</h3>
-        <p>Login and continue chatting with your contacts.</p>
-      </div>
-      <img src="{% static 'chatapp/chat-icon.png' %}" class="image" alt="Chat Icon" />
-    </div>
-  </div>
-</div>
+</body>
 {% endblock %}
