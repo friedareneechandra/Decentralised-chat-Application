@@ -1,8 +1,9 @@
-{% extends 'chatapp/base1.html' %}
+{% extends 'chatapp/base.html' %}
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
 <style>
+  /* Your existing styles */
   .dashboard-container {
     display: flex;
     min-height: 100vh;
@@ -170,37 +171,56 @@
       </ul>
     </div>
 
-    <div class="dropdown-section">
-      <div class="dropdown-header" onclick="toggleDropdown('roomsList', this)">
-        Rooms
-        <span class="dropdown-icon">▶</span>
+      <div class="dropdown-section">
+          <div class="dropdown-header" onclick="toggleDropdown('roomsList', this)">
+              Rooms
+              <span class="dropdown-icon">▶</span>
+          </div>
+          <ul class="dropdown-content" id="roomsList">
+              {% for room in rooms %}
+                  <li {% if room.room_name == room_name_from_url %}style="font-weight: bold;"{% endif %}>
+                      <a href="{% url 'dashboard_with_room' room_name=room.room_name %}">
+                          {{ room.room_name }}
+                          <span style="font-size: 0.85rem; color: #666;">
+      (owner: {{ room.owner.username|default:"Unknown" }})
+    </span>
+                      </a>
+                  </li>
+              {% empty %}
+                  <li>No rooms available</li>
+              {% endfor %}
+          </ul>
       </div>
-      <ul class="dropdown-content" id="roomsList">
-        {% for room in rooms %}
-          <li><a href="{% url 'chat_room' room_name=room.room_name %}">{{ room.room_name }}</a></li>
-        {% empty %}
-          <li>No rooms available</li>
-        {% endfor %}
-      </ul>
-    </div>
   </div>
 
   <div class="main-content">
-    <form id="roomForm" onsubmit="goToRoom(event)">
-      <div class="input-group">
-        <input type="text" id="roomInput" name="room_name" class="form-control" placeholder="Enter Room Name" required>
-        <input type="password" id="pinInput" name="pin" class="form-control" placeholder="Enter Room PIN" required>
-        <button type="submit" class="btn">Join Chat</button>
-      </div>
-    </form>
+      <form id="roomForm" method="POST" action="
+              {% if room_name_from_url %}{% url 'dashboard_with_room' room_name=room_name_from_url %}{% else %}{% url 'dashboard' %}{% endif %}">
+          {% csrf_token %}
+          <div class="input-group">
+              {% if not room_name_from_url %}
+                  <input type="text" id="roomInput" name="room" class="form-control" placeholder="Enter Room Name"
+                         required>
+              {% else %}
+                  <input type="hidden" name="room" value="{{ room_name_from_url }}">
+              {% endif %}
+              <input type="password" id="pinInput" name="pin" class="form-control" placeholder="Enter Room PIN"
+                     required>
+              <button type="submit" class="btn">
+                  {% if room_name_from_url %}Join Room{% else %}Join or Create Room{% endif %}
+              </button>
+          </div>
+      </form>
 
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li class="{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+      {% if messages %}
+          <ul class="messages">
+              {% for message in messages %}
+                  {% if forloop.last %}
+                      <li class="{{ message.tags }}">{{ message }}</li>
+                  {% endif %}
+              {% endfor %}
+          </ul>
+      {% endif %}
   </div>
 </div>
 
@@ -216,18 +236,6 @@
     const isOpen = content.style.display === 'block';
     content.style.display = isOpen ? 'none' : 'block';
     icon.classList.toggle('rotate', !isOpen);
-  }
-
-  function goToRoom(event) {
-    event.preventDefault();
-    const roomName = document.getElementById("roomInput").value.trim();
-    const pin = document.getElementById("pinInput").value.trim();
-    if (roomName && pin) {
-      const form = document.getElementById("roomForm");
-      form.method = "POST";
-      form.action = "/chat/join/";
-      form.submit();
-    }
   }
 </script>
 {% endblock %}
